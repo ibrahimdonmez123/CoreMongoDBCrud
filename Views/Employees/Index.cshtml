@@ -1,0 +1,144 @@
+﻿@{
+    ViewData["Title"] = "Employee Page";
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="row" style="display:none;">
+            <div class="col-md-4">
+                <label>Id :</label>
+            </div>
+
+            <div class="col-md-8">
+                <input id="txtEmpId" class="inputField" style="width:100%;" placeholder="Id" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <label>İsim :</label>
+            </div>
+            <div class="col-md-8">
+                <input id="txtName" class="inputField" style="width:100%;" placeholder="Name" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label>Kart Numarası :</label>
+            </div>
+            <div class="col-md-8">
+                <input id="txtCardNumber" class="inputField" style="width:100%;" placeholder="CardNumber" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label>Maaşı :</label>
+            </div>
+            <div class="col-md-8">
+                <input id="txtSalary" class="inputField" type="number" style="width:100%;" placeholder="Salary" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-8">
+                <br>
+                <button class="btn btn-primary" onclick="Save()">Kaydet</button>
+                                <br>
+
+                <button class="btn btn-danger" onclick="Reset()">Sonuçları Kaldır</button>                                <br>
+
+
+
+                <br>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <table id="tblEmployee" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Çalışan is numarası</th>
+                    <th>İsim</th>
+                    <th>Kart numarası</th>
+                    <th>Maaş</th>
+                    <th>Düzenleme</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="~/jquery/jquery.min.js"></script>
+<script type="text/javascript">
+    var _employees = [];
+
+    $(document).ready(function () {
+        LoadEmployees();
+    });
+
+
+
+
+
+    function LoadEmployees() {
+        Reset();
+        $.get("../Employees/GetEmployees", function (emps) {
+            console.log(emps); 
+            _employees = emps;
+            $.map(emps, function (emp) {
+                var tempStr = "<tr>";
+                tempStr += "<td>" + emp.Id + "</td>";
+                tempStr += "<td>" + emp.Name + "</td>";
+                tempStr += "<td>" + emp.CardNumber + "</td>";
+                tempStr += "<td>" + emp.Salary + "</td>";
+                tempStr += "<td><button class='btn btn-primary' onclick='Edit(\"" + emp.Id + "\")'>Edit</button><button class='btn btn-danger' onclick='Delete(\"" + emp.Id + "\")'>Delete</button></td>";
+                tempStr += "</tr>";
+                $("#tblEmployee tbody").append(tempStr);
+            });
+        });
+    }
+
+
+    function Reset() {
+        _employees = [];
+        $("#tblEmployee tbody tr").remove();
+        $(".inputField").val("");
+    }
+
+    function Save() {
+        var employee = {
+            Id: $.trim($("#txtEmpId").val()),
+            Name: $.trim($("#txtName").val()),
+            CardNumber: $.trim($("#txtCardNumber").val()),
+            Salary: $.trim($("#txtSalary").val())
+        };
+
+        $.post("../Employees/SaveEmp", employee, function (emp) {
+            LoadEmployees();
+        });
+    }
+
+    function Edit(empId) {
+        var emp = _employees.find(x => x.Id == empId);
+        $("#txtEmpId").val(emp.Id);
+        $("#txtName").val(emp.Name);
+        $("#txtCardNumber").val(emp.CardNumber);
+        $("#txtSalary").val(emp.Salary);
+    }
+
+    function Delete(empId) {
+        $.ajax({
+            url: "../Employees/DeleteEmp?empId=" + empId,
+            method: 'DELETE'
+        })
+            .done(function (data) {
+                alert(data);
+                LoadEmployees();
+            });
+    }
+</script>
